@@ -1,0 +1,210 @@
+# Network Traffic Analysis
+
+## Directory Tree
+
+```
+.
+├── ana_code
+│   ├── Correlation Coefficient
+│   │   ├── corr.scala
+│   │   └── usage.txt
+│   ├── KMeans Clustering
+│   │   ├── kmeans.scala
+│   │   └── usage.txt
+│   └── Mean Median Distribution
+│       ├── classes
+│       │   └── org
+│       │       └── qm2017
+│       │           ├── NetAnalysis.class
+│       │           ├── NetNumericalMapper.class
+│       │           ├── NetNumericalReducer.class
+│       │           ├── NetTextualMapper.class
+│       │           ├── NetTextualReducer.class
+│       │           ├── ReCleanMapper.class
+│       │           └── ReCleanReducer.class
+│       ├── SecAnalysis-1.0.0-textual-jar-with-dependencies.jar
+│       ├── SecAnalysis-2.0.0-numerical-jar-with-dependencies.jar
+│       └── src
+│           ├── main
+│           │   ├── java
+│           │   │   └── org
+│           │   │       └── qm2017
+│           │   │           ├── NetAnalysis.java
+│           │   │           ├── NetNumericalMapper.java
+│           │   │           ├── NetNumericalReducer.java
+│           │   │           ├── NetTextualMapper.java
+│           │   │           ├── NetTextualReducer.java
+│           │   │           ├── ReCleanMapper.java
+│           │   │           └── ReCleanReducer.java
+│           │   └── resources
+│           └── test
+│               └── java
+├── data_ingest
+│   ├── download.sh
+│   ├── hive_ingest.hql
+│   ├── hive.sh
+│   └── put_hdfs.sh
+├── etl_code
+│   └── qm2017
+│       ├── DataCleaning
+│       │   ├── classes
+│       │   │   └── org
+│       │   │       └── example
+│       │   │           ├── Clean.class
+│       │   │           ├── CleanMapper.class
+│       │   │           └── CleanReducer.class
+│       │   ├── data access
+│       │   ├── DataCleaning-1.0-SNAPSHOT-jar-with-dependencies_(1).jar
+│       │   ├── Empty File~
+│       │   └── src
+│       │       ├── main
+│       │       │   ├── java
+│       │       │   │   └── org
+│       │       │   │       └── example
+│       │       │   │           ├── Clean.java
+│       │       │   │           ├── CleanMapper.java
+│       │       │   │           └── CleanReducer.java
+│       │       │   └── resources
+│       │       └── test
+│       │           └── java
+│       └── DataCleaningForHiveUse
+│           ├── classes
+│           │   └── org
+│           │       └── qm2017
+│           │           ├── NetAnalysis.class
+│           │           ├── NetNumericalMapper.class
+│           │           ├── NetNumericalReducer.class
+│           │           ├── NetTextualMapper.class
+│           │           ├── NetTextualReducer.class
+│           │           ├── NumericalCleanerMapper.class
+│           │           ├── ReCleanMapper.class
+│           │           └── ReCleanReducer.class
+│           ├── SecAnalysis-4.0.0-cleaner-jar-with-dependencies.jar
+│           └── src
+│               ├── NetAnalysis.java
+│               ├── NumericalCleanerMapper.java
+│               └── ReCleanReducer.java
+├── profiling_code
+│   └── qm2017
+│       ├── classes
+│       │   └── org
+│       │       └── example
+│       │           ├── CountRecs.class
+│       │           ├── CountRecsMapper.class
+│       │           └── CountRecsReducer.class
+│       ├── DataProfiling-1.0-SNAPSHOT-jar-with-dependencies.jar
+│       └── src
+│           ├── CountRecs.java
+│           ├── CountRecsMapper.java
+│           └── CountRecsReducer.java
+├── README.md
+├── README.md~
+├── screenshots
+│   ├── numerical_analyzing.png
+│   ├── spark-analyzing
+│   │   ├── Screenshot from 2023-04-23 01-38-18.png
+│   │   ├── Screenshot from 2023-04-23 01-38-36.png
+│   │   ├── Screenshot from 2023-04-23 01-38-46.png
+│   │   ├── Screenshot from 2023-04-23 02-42-10.png
+│   │   ├── Screenshot from 2023-04-23 02-42-31.png
+│   │   └── Screenshot from 2023-04-23 02-46-29.png
+│   └── text_analyzing.png
+└── test_code
+```
+
+## Running Steps
+
+### Data Ingest
+
+Run `data_ingest/download` on a device with `wireshark` installed, and get a compressed output.tgz. Upload the tgz file to server.
+
+Decompress the tgz at server:
+```bash
+tar -I pigz -xvf output.tgz
+```
+
+Put the csv file into HDFS
+```bash
+hdfs dfs -put output.csv fproj/netcap
+```
+
+### Data Cleaning
+
+Run
+
+```bash
+hadoop jar 'DataCleaning-1.0-SNAPSHOT-jar-with-dependencies_(1).jar' org.example.Clean hdfs://nyu-dataproc-m/user/qm2017_nyu_edu/fproj/netcap/output.csv hdfs://nyu-dataproc-m/user/qm2017_nyu_edu/fproj/netcap/outputs
+```
+
+will result a csv formatted file at `hdfs://nyu-dataproc-m/user/qm2017_nyu_edu/fproj/netcap/outputs/part-r-00001`.
+
+### Data Profiling
+
+Run
+
+```bash
+hadoop jar 'DataProfiling-1.0-SNAPSHOT-jar-with-dependencies.jar' org.example.CountRecs hdfs://nyu-dataproc-m/user/qm2017_nyu_edu/fproj/netcap/output.csv hdfs://nyu-dataproc-m/user/qm2017_nyu_edu/fproj/netcap/raw-profiling
+```
+
+and 
+
+```bash
+hadoop jar 'DataProfiling-1.0-SNAPSHOT-jar-with-dependencies.jar' org.example.CountRecs hdfs://nyu-dataproc-m/user/qm2017_nyu_edu/fproj/netcap/outputs/part-r-00001 hdfs://nyu-dataproc-m/user/qm2017_nyu_edu/fproj/netcap/cleaned-profiling
+```
+
+will get data profiling result at `hdfs://nyu-dataproc-m/user/qm2017_nyu_edu/fproj/netcap/raw-profiling` and `hdfs://nyu-dataproc-m/user/qm2017_nyu_edu/fproj/netcap/cleaned-profiling`, respectively. Run
+
+```bash
+hdfs dfs -cat fproj/netcap/cleaned-profiling/part-r-00020
+hdfs dfs -cat fproj/netcap/raw-profiling/part-r-00020
+```
+
+to compare the line difference, cleaned about 600000+ packets not in our statistical group (non TCP/UDP packets).
+
+### Statistical Analysis
+
+For numerical fields:
+
+```bash
+hadoop jar 'SecAnalysis-2.0.0-numerical-jar-with-dependencies.jar' org.qm2017.NetAnalysis hdfs://nyu-dataproc-m/user/qm2017_nyu_edu/fproj/netcap/outputs/part-r-00001 hdfs://nyu-dataproc-m/user/qm2017_nyu_edu/fproj/netcap/initial-analysis-numerical-2
+```
+
+For textual fields:
+
+```bash
+hadoop jar 'SecAnalysis-1.0.0-textual-jar-with-dependencies.jar' org.qm2017.NetAnalysis hdfs://nyu-dataproc-m/user/qm2017_nyu_edu/fproj/netcap/outputs/part-r-00001 hdfs://nyu-dataproc-m/user/qm2017_nyu_edu/fproj/netcap/initial-analysis-textual
+```
+
+Get textual fields counters and numerical fields distributions (100 interval histogram), means, standard deviations, and medians.
+
+### Outlier Cleaning
+
+Based on Initial Data Cleaning result, do another round of cleaning, removing outliers, add binary data status indicator. Run
+
+```bash
+hadoop jar 'SecAnalysis-3.0.0-cleaner-jar-with-dependencies.jar' org.qm2017.NetAnalysis hdfs://nyu-dataproc-m/user/qm2017_nyu_edu/fproj/netcap/outputs/part-r-00001 hdfs://nyu-dataproc-m/user/qm2017_nyu_edu/fproj/netcap/initial-analysis-cleaner
+```
+
+For further numerical analysis, select out numerical fields:
+
+```bash
+hadoop jar 'SecAnalysis-4.0.0-cleaner-jar-with-dependencies.jar' org.qm2017.NetAnalysis hdfs://nyu-dataproc-m/user/qm2017_nyu_edu/fproj/netcap/initial-analysis-cleaner/part-r-00001 hdfs://nyu-dataproc-m/user/qm2017_nyu_edu/fproj/netcap/numerical_for_learn
+```
+
+### Hive Ingest
+
+In beeline, run `data_ingest/hive_ingest.hql`, get a table named `tcp_numerical`
+
+### Spark Analysis
+
+- Fields Correlation Coefficient
+
+	Use spark-shell, execute `"ana_code/Correlation Coefficient/corr.scala"`, the result will be printed in stdout.
+	
+- KMeans Clustering
+
+	Use spark-shell execute `"ana_code/KMeans Clustering/kmeans.scala"`, the clustering behavior score, and cluster centers will be printed in stdout.
+
+
+
+

@@ -1,0 +1,4 @@
+Data Cleaning:
+
+Data: hdfs://hdfs://nyu-dataproc-m/user/qm2017_nyu_edu/fproj/netcap/output.csv
+Result: hdfs://nyu-dataproc-m/user/qm2017_nyu_edu/fproj/netcap/outputs/part-r-00001
